@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Weather App</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      color: #fff;
+      padding: 24px;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 24px;
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.4);
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 24px;
+      letter-spacing: -0.3px;
+    }
+
+    h1 span { opacity: 0.5; font-weight: 300; }
+
+    /* Search */
+    .search {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 32px;
+    }
+
+    .search input {
+      flex: 1;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 12px;
+      padding: 12px 16px;
+      color: #fff;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search input::placeholder { color: rgba(255,255,255,0.4); }
+    .search input:focus { border-color: rgba(255,255,255,0.5); }
+
+    .search button {
+      background: #7c3aed;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 20px;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      white-space: nowrap;
+    }
+
+    .search button:hover { background: #6d28d9; }
+    .search button:active { transform: scale(0.96); }
+
+    /* Error */
+    .error {
+      background: rgba(239,68,68,0.15);
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: 12px;
+      padding: 14px 18px;
+      color: #fca5a5;
+      font-size: 0.95rem;
+    }
+
+    /* Weather result */
+    .weather { animation: fadeUp 0.4s ease; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .location {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .location .country {
+      font-weight: 300;
+      opacity: 0.6;
+      font-size: 1rem;
+      margin-left: 4px;
+    }
+
+    .main-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 12px 0 24px;
+    }
+
+    .temp {
+      font-size: 5rem;
+      font-weight: 200;
+      line-height: 1;
+      letter-spacing: -4px;
+    }
+
+    .temp sup {
+      font-size: 2rem;
+      font-weight: 400;
+      letter-spacing: 0;
+      vertical-align: super;
+    }
+
+    .icon-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .icon-wrap img {
+      width: 88px;
+      height: 88px;
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));
+    }
+
+    .description {
+      font-size: 0.85rem;
+      opacity: 0.7;
+      text-align: center;
+    }
+
+    /* Stats grid */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .stat {
+      background: rgba(255,255,255,0.07);
+      border-radius: 14px;
+      padding: 14px 12px;
+      text-align: center;
+    }
+
+    .stat .label {
+      font-size: 0.72rem;
+      opacity: 0.5;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    .stat .value {
+      font-size: 1.1rem;
+      font-weight: 500;
+    }
+
+    .stat .unit {
+      font-size: 0.75rem;
+      opacity: 0.6;
+      margin-left: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Weather <span>/ Live</span></h1>
+
+    <form class="search" method="POST">
+      <input
+        type="text"
+        name="city"
+        placeholder="Enter a city…"
+        value="{{ city }}"
+        autocomplete="off"
+        autofocus
+        required
+      />
+      <button type="submit">Search</button>
+    </form>
+
+    {% if weather %}
+      {% if weather.error %}
+        <div class="error">{{ weather.error }}</div>
+      {% else %}
+        <div class="weather">
+          <div class="location">
+            {{ weather.city }}<span class="country">{{ weather.country }}</span>
+          </div>
+
+          <div class="main-row">
+            <div class="temp">{{ weather.temp }}<sup>°C</sup></div>
+            <div class="icon-wrap">
+              <img
+                src="https://openweathermap.org/img/wn/{{ weather.icon }}@2x.png"
+                alt="{{ weather.description }}"
+              />
+              <div class="description">{{ weather.description }}</div>
+            </div>
+          </div>
+
+          <div class="stats">
+            <div class="stat">
+              <div class="label">Feels like</div>
+              <div class="value">{{ weather.feels_like }}<span class="unit">°C</span></div>
+            </div>
+            <div class="stat">
+              <div class="label">Humidity</div>
+              <div class="value">{{ weather.humidity }}<span class="unit">%</span></div>
+            </div>
+            <div class="stat">
+              <div class="label">Wind</div>
+              <div class="value">{{ weather.wind_speed }}<span class="unit">km/h</span></div>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+    {% endif %}
+  </div>
+</body>
+</html>
