@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Calculator</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f4; }
+        .calculator { background: #fff; padding: 2rem; border-radius: 10px; box-shadow: 0 2px 8px #ccc; width: 320px; margin: 50px auto; }
+        input, button { font-size: 1.2rem; margin: 0.2rem; }
+        .result { margin-top: 1rem; font-size: 1.3rem; color: #333; }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <h2>Modern Calculator</h2>
+        <form id="calc-form">
+            <input type="number" id="num1" required placeholder="First number">
+            <select id="op">
+                <option value="+">+</option>
+                <option value="-">-</option>
+                <option value="*">×</option>
+                <option value="/">÷</option>
+            </select>
+            <input type="number" id="num2" required placeholder="Second number">
+            <button type="submit">Calculate</button>
+        </form>
+        <div class="result" id="result"></div>
+    </div>
+    <script>
+        document.getElementById('calc-form').onsubmit = async function(e) {
+            e.preventDefault();
+            const num1 = parseFloat(document.getElementById('num1').value);
+            const num2 = parseFloat(document.getElementById('num2').value);
+            const op = document.getElementById('op').value;
+            const resDiv = document.getElementById('result');
+            resDiv.textContent = 'Calculating...';
+            try {
+                const resp = await fetch('/api/clac', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ num1, num2, op })
+                });
+                const data = await resp.json();
+                if (resp.ok) {
+                    resDiv.textContent = 'Result: ' + data.result;
+                } else {
+                    resDiv.textContent = 'Error: ' + (data.detail || 'Unknown error');
+                }
+            } catch (err) {
+                resDiv.textContent = 'Error: ' + err;
+            }
+        };
+    </script>
+</body>
+</html>
